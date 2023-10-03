@@ -1,55 +1,46 @@
 const sellerModel =require("../Model/sellerModel") 
 const productModel = require("../Model/productModel")
+const asyncWrapper =require("../Util/asyncWrapper")
+const appError = require("../Util/appError")
+const httpStatusText = require("../Util/httpStatusText")
+const calculateRating = require("../Util/calculateRating")
 
-function calculateRating(ratings){
-    if (ratings.length == 0 ){
-        return 0
-    }
-    const totalRating = ratings.reduce((acc, rating) => acc + rating.rating, 0);
-    const averageRating = totalRating / ratings.length;
-    return Math.round(averageRating*10) / 10
-}
-const addRatingToProduct = async(req,res)=>{
-    try {
+
+const addRatingToProduct = asyncWrapper(async(req,res,next)=>{
         const productId = req.params.id
         const {rating , review} = req.body
         const customerId = req.user._id
     
         if (!customerId){
-            return res.status(404).json({msg:"login first"})
+            const error =  appError.createError("login first", 400, httpStatusText.FAIL)
+            return next(error)        
         }
-    
         let product = await productModel.findById(productId)
         if(!product){
-            return res.status(404).json({msg:" product not found "})
-        }
+            const error =  appError.createError("product not found", 400, httpStatusText.FAIL)
+            return next(error)       
+         }
         const newRating = {
             customerId,
             rating,
             review
         }
-    
         product.ratings.push(newRating);
         await product.save()
         const totalRating =  calculateRating(product.ratings)
         product.totalRate = totalRating 
         await product.save()
-        res.status(200).json({msg:"successfully add"})
-    
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
-    }
-}
+        res.status(200).json({status: httpStatusText.SUCCESS,msg:"successfully add"})
+})
 
-const addRatingToSeller = async(req,res)=>{
-try {
+const addRatingToSeller = asyncWrapper(async(req,res,next)=>{
     const sellerId = req.params.id
     const {rating , review} = req.body
     const customerId = req.user._id
     let seller = await sellerModel.findById(sellerId)
     if (!seller){
-        return res.status(404).json({msg:"user not found"})
+        const error =  appError.createError("seller not found", 400, httpStatusText.FAIL)
+        return next(error)    
     }
     const newRating = {
        customerId : {
@@ -60,46 +51,29 @@ try {
     }
     seller.ratings.push(newRating)
     await seller.save()
-    res.status(200).json({msg:"rating successfully" , newRating})
-
-} catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Error")
-}
-}
-const sellerRating = async (req,res)=>{
-    try {
-        const sellerId = req.user._id
-        const seller = await sellerModel.findById(sellerId)
-        if(!seller){
-            return res.status(404).json("seller not found")
-        }
-        
-        const rating = seller.ratings
-        res.status(200).json(rating)
-    } catch (error) {
-        console.error(error)
-    res.status(500).send("Internal Error")
-
+    res.status(200).json({status: httpStatusText.SUCCESS , newRating})
+})
+const sellerRating = asyncWrapper(async (req,res,next)=>{
+    const sellerId = req.user._id
+    const seller = await sellerModel.findById(sellerId)
+    if(!seller){
+        const error =  appError.createError("seller not found", 400, httpStatusText.FAIL)
+        return next(error)       
+     }
+    const rating = seller.ratings
+    res.status(200).json(rating)
+})
+const productRating =asyncWrapper( async (req,res,next)=>{
+    const productId = req.params.id
+    const product = await productModel.findById(productId)
+    if(!product){
+        const error =  appError.createError("product not found", 400, httpStatusText.FAIL)
+        return next(error)        
     }
-}
-const productRating = async (req,res)=>{
-    try {
-        const productId = req.params.id
-        const product = await productModel.findById(productId)
-        if(!product){
-            return res.status(404).json("product not found")
-        }
-        
-        const rating = product.ratings
-        const totalRate = product.totalRate
-        res.status(200).json({msg:`total rate is ${totalRate} ` , rating})
-    } catch (error) {
-        console.error(error)
-    res.status(500).send("Internal Error")
-
-    }
-}
+    const rating = product.ratings
+    const totalRate = product.totalRate
+    res.status(200).json({msg:`total rate is ${totalRate} ` , rating})
+})
 
     
     

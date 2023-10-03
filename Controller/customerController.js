@@ -1,82 +1,65 @@
 const CustomerModel =require("../Model/userModel") 
 const productModel = require("../Model/productModel")
-
-const addToCart = async(req,res)=>{
-    try {
-      const productId = req.params.id
-      const product =  await productModel.findById(productId)
-      if (!product ){
-        return res.status(404).json({msg:"product not found"})
-      }
-      const customerId = req.user._id;
-
-      // Find the customer based on their ID
-      const customer = await CustomerModel.findById(customerId);
-  
-      if (!customer) {
-        return res.status(404).json({ msg: "Customer not found" });
-      }
-
-      const item = {
-        product :{
-            product: product._id,
-            name: product.Name,
-            description: product.Description,
-            price: product.Price,
-        },
-        quantity: 1, // You can specify the quantity as needed
-      }
-
-      customer.shoppingCart.push(item.product )
-      await customer.save()
-      res.status(200).json({msg:"successfully add"})
+const asyncWrapper =require("../Util/asyncWrapper")
+const appError = require("../Util/appError")
+const httpStatusText = require("../Util/httpStatusText")
 
 
+const addToCart = asyncWrapper(async(req,res,next)=>{
+    const productId = req.params.id
+    const product =  await productModel.findById(productId)
+    if (!product ){
+      const error =  appError.createError("product not found", 400, httpStatusText.FAIL)
+      return next(error)              
+  }
+    const customerId = req.user._id;
+    // Find the customer based on their ID
+    const customer = await CustomerModel.findById(customerId);
 
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
+    if (!customer) {
+      const error =  appError.createError("customer not found", 400, httpStatusText.FAIL)
+      return next(error)}
+    const item = {
+      product :{
+          product: product._id,
+          name: product.Name,
+          description: product.Description,
+          price: product.Price,
+      },
+      quantity: 1, // You can specify the quantity as needed
     }
-}
+    customer.shoppingCart.push(item.product )
+    await customer.save()
+    res.status(200).json({status: httpStatusText.SUCCESS,msg:"successfully add"})
+})
 
 
-const getAllItem = async(req,res)=>{
-try {
+const getAllItem = asyncWrapper(async(req,res,next)=>{
     const customerId =  req.user._id
 
     let customer = await CustomerModel.findById(customerId)
     if (!customer){
-        return res.status(404).json({msg:"customer not found"})
+        const error =  appError.createError("customer not found", 400, httpStatusText.FAIL)
+        return next(error)    
     }
-
     const items = customer.shoppingCart
     res.status(200).json(items)
-} catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Error")
+})
+
+
+const deleteItem = asyncWrapper(async(req,res,next)=>{
+    let itemId = req.params.id
+    const customerId = req.user._id
+    let customer = await CustomerModel.findById(customerId)
+    if(!customer){
+        const error =  appError.createError("customer not found", 400, httpStatusText.FAIL)
+        return next(error)}
+
+   customer.shoppingCart = customer.shoppingCart.filter((item)=> item.product.toString() !== itemId) 
+    await customer.save()
+     res.json({msg : "deleted success"})
 }
-}
-
-
-const deleteItem = async(req,res)=>{
-    try {
-        let itemId = req.params.id
-        const customerId = req.user._id
-        let customer = await CustomerModel.findById(customerId)
-        if(!customer){
-            return res.status(404).json({msg:"customer not found"})
-        }
-
-       customer.shoppingCart = customer.shoppingCart.filter((item)=> item.product.toString() !== itemId) 
-        await customer.save()
-            res.json({msg : "deleted success"})
-        
-        } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
-    }
-}
-
+)
 
 
 

@@ -3,9 +3,12 @@ const  Seller = require("../Model/sellerModel")
 const categoryModel = require("../Model/categoryModel")
 const Customer = require("../Model/userModel")
 const OrderItem = require("../Model/Order-ItemModel")
+const asyncWrapper =require("../Util/asyncWrapper")
+const appError = require("../Util/appError")
+const httpStatusText = require("../Util/httpStatusText")
 
-let addProduct = async(req,res)=>{
-    try {
+
+let addProduct = asyncWrapper(async(req,res,next)=>{
         const { Name , Description , Price , category} = req.body
         const Image = req.files.map((file) => file.path)
         const sellerId = req.user._id
@@ -31,92 +34,69 @@ let addProduct = async(req,res)=>{
         await addToCategory.save()
          
         res.status(200).json({
+            status: httpStatusText.SUCCESS,
             msg : "Add Product Successfully"
         })
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
+})
+
+let deleteProduct = asyncWrapper(async(req,res,next)=>{
+    const productId = req.params.id
+    let product = await productModel.findByIdAndRemove(productId)
+    if(!product){
+        const error =  appError.createError("Product not found", 400, httpStatusText.FAIL)
+        return next(error)              
     }
-}
+    // if you delete product you should change product count in seller model
+    await OrderItem.deleteMany({ product: productId });
 
+    await Customer.updateMany(
+        {"shoppingCart.product" : productId},
+        {$pull: {shoppingCart : {product : productId}}}
+    )
+    const seller = await Seller.findById(product.seller)
+    if (!seller){
+        const error =  appError.createError("seller not found", 400, httpStatusText.FAIL)
+        return next(error)           
+     }
+    seller.products = seller.products.filter((productId)=>productId.toString() !== product._id.toString()) 
 
-let deleteProduct = async(req,res)=>{
-    try {
-        const productId = req.params.id
-        let product = await productModel.findByIdAndRemove(productId)
-
-        if(!product){
-            return res.status(404).json({data:"product already deleted"})
-        }
-        // if you delete product you should change product count in seller model
-
-        await OrderItem.deleteMany({ product: productId });
-
-        await Customer.updateMany(
-            {"shoppingCart.product" : productId},
-            {$pull: {shoppingCart : {product : productId}}}
-            )
-
-        const seller = await Seller.findById(product.seller)
-        if (!seller){
-            return res.status(404).json({data:"seller not found"})
-        }
-        seller.products = seller.products.filter((productId)=>productId.toString() !== product._id.toString()) 
-
-        seller.productCount -= 1
-        await seller.save();
-        // delete from category
-        const category = await categoryModel.findById(product.category)
-        if (!category){
-            return res.status(404).json({data:"category not found"})
-        }
-        category.product = category.product.filter((productId)=>productId.toString() !== product._id.toString())
-        await category.save()
-        res.status(200).json({msg:"Deleted Successfully"})
-
-
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
+    seller.productCount -= 1
+    await seller.save();
+    // delete from category
+    const category = await categoryModel.findById(product.category)
+    if (!category){
+        const error =  appError.createError("category not found", 400, httpStatusText.FAIL)
+        return next(error)  
     }
-}
+    category.product = category.product.filter((productId)=>productId.toString() !== product._id.toString())
+    await category.save()
+    res.status(200).json({status: httpStatusText.SUCCESS,msg:"Deleted Successfully"})
+})
 
+let updateProduct = asyncWrapper(async(req,res,next)=>{
+    const productId = req.params.id
+    const {Name ,Price,Description} = req.body
+    const updatedImage = req.files.map((file)=>file.path)
 
-let updateProduct = async(req,res)=>{
-    try {
-        const productId = req.params.id
-        const {Name ,Price,Description} = req.body
-        const updatedImage = req.files.map((file)=>file.path)
+    const updateData = await productModel.findByIdAndUpdate(productId,{
+        Name,
+        Description,
+        Price,
+        push : {Image :{$each : updatedImage}}
+    },
+    {new : true}
+    )
+    if (!updateData){
+        const error =  appError.createError("Product not found", 400, httpStatusText.FAIL)
+        return next(error)}
+    res.status(200).json({status: httpStatusText.SUCCESS ,msg:"updated successfully " , updateData})
+})
 
-        const updateData = await productModel.findByIdAndUpdate(productId,{
-            Name,
-            Description,
-            Price,
-            push : {Image :{$each : updatedImage}}
-        },
-        {new : true}
-        )
-        if (!updateData){
-            return res.status(404).json({msg:"product not found"})
-        }
-        res.status(200).json({msg:"updated successfully " , updateData})
-    
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
-    }
-}
+let getAllProduct = asyncWrapper(async(req,res,next)=>{
+    let products = await productModel.find()
+    res.status(200).json(products)
 
-
-let getAllProduct = async(req,res)=>{
-    try {
-        let products = await productModel.find()
-        res.status(200).json(products)
-    } catch (error) {
-        console.error(error)
-        res.status(500).send("Internal Error")
-    }
-}
+})
 
 
 
