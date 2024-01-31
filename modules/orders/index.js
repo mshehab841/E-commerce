@@ -1,8 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const orderController = require("../Controller/orderController")
-const Auth = require("../Middleware/Authentication")
-const authorize = require("../Middleware/Authorization")
+const orderController = require("./order.controller")
+const Auth = require("../../Middleware/Authentication")
+const authorize = require("../../Middleware/Authorization")
 
 
 router.post("/",Auth ,authorize('customer'), orderController.makeOrder)

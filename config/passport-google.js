@@ -1,17 +1,17 @@
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20').Strategy
-const User = require('../Model/userModel')
+const User = require('../modules/user/user.model')
 const dotenv = require('dotenv')
 dotenv.config()
 
 passport.use(
     new GoogleStrategy({
-        clientID:process.env.googleClientID,
-        clientSecret:process.env.googleClientSecret,
+        clientID:process.env.googleClientID ,
+        clientSecret: process.env.googleClientSecret,
         callbackURL:'/auth/google/redirect',
     },(accessToken , refreshToken , profile , done)=>{
         // console.log(profile)
-        User.findOne({googleID : profile.id}).then((currentUser)=>{
+        User.findOne({OAuthToken : profile.id}).then((currentUser)=>{
             if (currentUser){
                 console.log("user is "+currentUser)
                 done(null ,currentUser)
@@ -19,8 +19,8 @@ passport.use(
                 new User ({
                     name : profile.displayName ,
                     email: profile.emails[0].value,
-                    provider: 'facebook',
-                    facebookID: profile.id
+                    provider : 'google',
+                    OAuthToken: profile.id
                 }).save().then((newUser)=>{
 
                     console.log("new user created"+newUser)

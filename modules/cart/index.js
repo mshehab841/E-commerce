@@ -1,8 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const customerController = require("../Controller/customerController")
-const authorize = require("../Middleware/Authorization")
-const auth = require("../Middleware/Authentication")
+const customerController = require("./cart.controller")
+const authorize = require("../../Middleware/Authorization")
+const auth = require("../../Middleware/Authentication")
 
 
 

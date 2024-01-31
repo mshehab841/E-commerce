@@ -6,7 +6,7 @@ module.exports = async(req,res,next)=>{
         return res.status(404).json("access Denied")
     }
     try {
-        const decoded = jwt.verify(token , 'your-secret-key')
+        const decoded = jwt.verify(token , process.env.jwt_secret_key)
         req.user = decoded 
         next()
     } catch (error) {

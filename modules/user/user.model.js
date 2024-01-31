@@ -1,3 +1,4 @@
+const { verify } = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const valid = require('validator')
 
@@ -14,6 +15,9 @@ const user = new mongoose.Schema({
     password: {
         type :String , 
         minLength:7,
+        required(){
+            return this.provider === "local"
+        }
     },
     dateOfBirth: Date,
     address: {
@@ -62,10 +66,16 @@ const user = new mongoose.Schema({
     },
     provider:{
         type:String,
-        enum : ["google" , "facebook"]
+        enum : ["google" , "facebook" , "local"],
+        default : "local"
     },
-    googleID:String,
-    facebookID:String,
+    OAuthToken : {
+        type : String
+    },
+    verified : {
+        type : Boolean , 
+        default : false
+    }
 })
       
 const User = mongoose.model("user" , user)

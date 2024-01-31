@@ -1,6 +1,6 @@
 const passport = require('passport')
 const FacebookStrategy = require('passport-facebook').Strategy
-const User = require('../Model/userModel')
+const User = require('../modules/user/user.model')
 const dotenv = require('dotenv')
 dotenv.config()
 
@@ -13,7 +13,7 @@ passport.use(
     },(accessToken, refreshToken, profile, done)=>{
         console.log("you are in redirect")
         console.log(profile)
-        User.findOne({facebookID : profile.id}).then((currentUser)=>{
+        User.findOne({OAuthToken : profile.id}).then((currentUser)=>{
             if (currentUser){
                 console.log("user is "+currentUser)
                 done(null ,currentUser)
@@ -21,8 +21,8 @@ passport.use(
                 new User ({
                     name : profile.displayName ,
                     email: profile.emails[0].value,
-                    provider: 'google',
-                    googleID: profile.id
+                    provider: 'facebook',
+                    OAuthToken: profile.id
                 }).save().then((newUser)=>{
 
                     console.log("new user created"+newUser)

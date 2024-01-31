@@ -1,8 +1,5 @@
 const mongoose = require('mongoose')
-const Category = require("./categoryModel")
-const orderItem = require("./Order-ItemModel")
-const seller = require("./sellerModel")
-const customer = require("./userModel")
+
 
 const product = new mongoose.Schema({
    Name:{

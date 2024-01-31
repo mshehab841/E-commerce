@@ -1,10 +1,10 @@
-const paymentModel = require("../Model/paymentModel")
-const orderModel  = require("../Model/orderModel")
-const orderItemModel = require("../Model/Order-ItemModel")
-const sellerModel = require("../Model/sellerModel")
-const asyncWrapper =require("../Util/asyncWrapper")
-const appError = require("../Util/appError")
-const httpStatusText = require("../Util/httpStatusText")
+const paymentModel = require("./paymentModel")
+const orderModel  = require("../orders/order.model")
+const orderItemModel = require("../orders/order.item.model")
+const sellerModel = require("../user/seller.model")
+const asyncWrapper =require("../../Util/asyncWrapper")
+const appError = require("../../Util/appError")
+const httpStatusText = require("../../Util/httpStatusText")
 
 let successPayment =asyncWrapper( async (req,res,next)=>{
     const orderId = req.params.id 

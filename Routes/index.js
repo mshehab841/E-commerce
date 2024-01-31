@@ -1,0 +1,23 @@
+const user = require('../modules/user/index')
+const googleAuth = require("./GoogleAuth")
+const facebookAuth = require('./FacebookAuth')
+const product = require("../modules/product/index")
+const category = require("../modules/category/index")
+const Rating = require("../modules/Rating/index")
+const orders = require("../modules/orders/index")
+const payment = require("../modules/payment/index")
+const cart = require("../modules/cart/index")
+const express = require("express")
+const router = express.Router()
+
+router.use('/user' , user)
+router.use('/g' , googleAuth)
+router.use('/f' , facebookAuth)
+router.use("/product" , product)
+router.use("/category", category)
+router.use("/rating", Rating)
+router.use("/order", orders)
+router.use("/payment", payment)
+router.use('/cart' , cart)
+
+module.exports = router

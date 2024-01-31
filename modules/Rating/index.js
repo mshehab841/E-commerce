@@ -1,8 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const auth = require("../Middleware/Authentication")
-const ratingController = require("../Controller/ratingController")
-const authorize = require("../Middleware/Authorization")
+const auth = require("../../Middleware/Authentication")
+const ratingController = require("./rating.controller")
+const authorize = require("../../Middleware/Authorization")
 
 
 router.post("/product/:id" ,auth,authorize('customer') ,ratingController.addRatingToProduct)
