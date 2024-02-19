@@ -1,10 +1,10 @@
 const express = require("express")
-const httpStatusText = require("./Util/httpStatusText")
+const httpStatusText = require('./src/Util/httpStatusText')
 const cookieParser = require('cookie-parser')
 const passport = require('passport')
-const passportSetup = require('./config/passport-google')
-const passportFacebook = require('./config/passport-facebook')
-const db = require('./DB/connection')
+const passportSetup = require('./src/config/passport-google')
+const passportFacebook = require('./src/config/passport-facebook')
+const db = require('./src/DB/connection')
 require('dotenv').config()
 
 const app = express()
@@ -16,7 +16,9 @@ app.use(cookieParser())
 app.use(passport.initialize())
 
 
-const combinedRoutes = require("./Routes/index")
+
+
+const combinedRoutes = require("./src/Routes/index")
 
 
 app.use('/v1' , combinedRoutes )
