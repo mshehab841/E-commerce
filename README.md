@@ -1,6 +1,20 @@
 E-commerce Backend
 The E-commerce Backend is a robust, feature-rich, and secure backend system built using Node.js with the Express.js framework and MongoDB as the database. This powerful backend system is designed to support various essential features of an e-commerce platform, ensuring seamless user experiences and efficient management of products, categories, orders, and user accounts.
-
+=================================Feature==============================
+-
+1-OAuth2.0
+2-verfiyEamil
+3-stripe-Payment 
+4-Redis(caching)
+5-send-Email using (sendinblue)
+6-normal feature :{
+1-auth flow 
+2- product 
+3- categories
+4- cart 
+5- orders flow 
+-
+}
 Key Features
 Authentication and Authorization
 JWT Authentication: Users can securely log in using JSON Web Tokens (JWT). This ensures that user sessions are authenticated and authorized, providing a secure and seamless login experience.
