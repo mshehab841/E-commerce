@@ -22,7 +22,9 @@ const combinedRoutes = require("./src/Routes/index")
 
 
 app.use('/v1' , combinedRoutes )
-
+app.post("/healthz", (req, res) => {
+        res.status(200).json({ status: "iam fine" });
+    });
 db()
 //error for unknown route
 app.all("*",(req,res,next)=>{
