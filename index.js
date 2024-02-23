@@ -22,10 +22,9 @@ const combinedRoutes = require("./src/Routes/index")
 
 
 app.use('/v1' , combinedRoutes )
-app.post("/healthz", (req, res) => {
-        res.status(200).json({ status: "iam fine" });
-    });
+
 db()
+
 //error for unknown route
 app.all("*",(req,res,next)=>{
     res.status(404).json({status : httpStatusText.FAIL, message : "Route not found"})
@@ -33,6 +32,7 @@ app.all("*",(req,res,next)=>{
 
 //asyncWrapper
 app.use((error,req,res,next)=>{
+    console.log(error)
     res.status(error.statusCode ||500).json({status : error.statusText || httpStatusText.ERROR,message : error.message ,code :error.statusCode ||500 })
 })
 
