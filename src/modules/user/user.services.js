@@ -3,6 +3,8 @@ const appError = require("../../Util/appError")
 const httpStatusText = require("../../Util/httpStatusText")
 const {findUserByEmail , createUserRepo, findUserById, deleteUser, deleteFromSeller} = require("./user.repo")
 const { sendVerificationEmail  , verificationToken} = require("../../Util/sendEmail")
+const  prepareAudit = require("../audit/audit.services")
+const audit_action = require("../audit/audit-actions")
 
 const createUser = async (user) => {
     let userExit = await findUserByEmail(user.email)
@@ -49,6 +51,7 @@ const loginServices = async (user , next) => {
         const error = appError.createError("Password does not match", 400, httpStatusText.FAIL)
         throw error
     }
+    prepareAudit(audit_action.LOGIN , userFound ,null, userFound._id)
     return userFound
 
 }
